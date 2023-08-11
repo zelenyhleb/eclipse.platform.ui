@@ -94,8 +94,6 @@ public final class FoldersAsProjectsContributionTest {
 			createProject(new Path(root.getAbsolutePath()).append(inner2.getName()).toFile(), inner2);
 		} catch (CoreException | IOException e) {
 			fail(NLS.bind("Required projects can not be created due to: {0}", e.getMessage()));
-		} finally {
-			Job.getJobManager().endRule(rule);
 		}
 
 		try {
@@ -110,6 +108,7 @@ public final class FoldersAsProjectsContributionTest {
 					contributionAdded(manager, SelectProjectForFolderAction.class));
 		} finally {
 			clear(projects);
+			Job.getJobManager().endRule(rule);
 		}
 	}
 
@@ -132,8 +131,6 @@ public final class FoldersAsProjectsContributionTest {
 			inner2.delete(false, true, new NullProgressMonitor());
 		} catch (CoreException | IOException e) {
 			fail(NLS.bind("Required projects can not be created due to: {0}", e.getMessage()));
-		} finally {
-			Job.getJobManager().endRule(rule);
 		}
 		try {
 			IMenuManager manager = menuManager();
@@ -145,6 +142,7 @@ public final class FoldersAsProjectsContributionTest {
 					contributionsList(manager)), contributionAdded(manager, OpenFolderAsProjectAction.class));
 		} finally {
 			clear(projects);
+			Job.getJobManager().endRule(rule);
 		}
 	}
 
@@ -164,8 +162,6 @@ public final class FoldersAsProjectsContributionTest {
 			inner1.delete(false, true, new NullProgressMonitor());
 		} catch (CoreException | IOException e) {
 			fail(NLS.bind("Required projects can not be created due to: {0}", e.getMessage()));
-		} finally {
-			Job.getJobManager().endRule(rule);
 		}
 		try {
 			IMenuManager manager = menuManager();
@@ -180,6 +176,7 @@ public final class FoldersAsProjectsContributionTest {
 					contributionAdded(manager, OpenFolderAsProjectAction.class));
 		} finally {
 			clear(projects);
+			Job.getJobManager().endRule(rule);
 		}
 	}
 
@@ -243,9 +240,13 @@ public final class FoldersAsProjectsContributionTest {
 		// If project description does not exist after creation (for whatever reason),
 		// create it explicitly with empty content
 		try {
-			Files.createFile(Paths.get(description.getLocationURI()));
+			java.nio.file.Path path = Paths.get(description.getLocationURI());
+			Files.createDirectories(path.getParent());
+			Files.createFile(path);
 		} catch (IOException e) {
-			fail(String.format("Can't explicitly create project description due to: %s", e.getMessage()));
+			e.printStackTrace();
+			fail(String.format("Can't explicitly create project description due to: %s: %s", e.getClass().getName(),
+					e.getMessage()));
 		}
 		assertTrue(String.format("Project description for %s does not exist", name), description.exists());
 	}
